@@ -1,7 +1,10 @@
 import sys
 import requests
-import parsing_blog
 from bs4 import BeautifulSoup
+
+
+import parsing_blog
+import utils
 
 out_path = 'out/'
 
@@ -44,6 +47,9 @@ if __name__ == '__main__':
         url = 'https://blog.naver.com/chandong83/221951781607'
         output = 'parse.html'
         print(url)
+
+    if not utils.check_out_folder():
+        exit(-1)
 
     redirect_url = parsing_blog.redirect_url(url)
     if crawler(redirect_url, output):        

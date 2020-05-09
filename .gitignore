@@ -1,5 +1,6 @@
 __pycache__/
 out/*
+chromedriver/*.exe
 
 *.html
 *.csv

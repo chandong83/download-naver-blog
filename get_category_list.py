@@ -5,6 +5,7 @@ from selenium.webdriver.support.events import EventFiringWebDriver, AbstractEven
 from bs4 import BeautifulSoup
 
 import parsing_blog
+import utils
 
 
 out_path = 'out/'
@@ -85,9 +86,16 @@ class MyListener(AbstractEventListener):
 
 
 if __name__ == '__main__':    
+
+    driver_path = utils.check_chromedriver(chrome_driver_path)
+    if driver_path is None:
+        print('크롬드라이버가 없습니다. 아래의 링크에서 PC에 설치된 크롬 브라우저 버전과 맞는 드라이버를 먼저 다운로드해주세요.')
+        print('https://chromedriver.storage.googleapis.com/index.html')
+        print('다운로드한 드라이버는 dhromedriver 폴더에 넣으시면 됩니다.')
+        exit(-1)
     print('로그인 화면으로 이동합니다.')
-    print('로그인 화면이 보이면, 로그인을 시도해 주세요.')
-    driver_plain = webdriver.Chrome(chrome_driver_path)
+    print('로그인 화면이 보이면, 로그인을 시도해 주세요.')    
+    driver_plain = webdriver.Chrome(driver_path)
     driver = EventFiringWebDriver(driver_plain, MyListener())
     driver.get('https://nid.naver.com/nidlogin.login')    
     
@@ -97,6 +105,10 @@ if __name__ == '__main__':
             print('키입력이 없습니다. 다시입력해주세요.')
         else:
             break
+        
+    if not utils.check_out_folder():
+        exit(-1)
+
     print(url + ' : 주소의 정보를 읽어옵니다.')    
     driver.get(parsing_blog.redirect_url(url))
     while is_done is not True:
