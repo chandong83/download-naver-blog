@@ -14,11 +14,15 @@ def crawler(blog_url, file_name):
                 fp.write(str(redirect_soup))
 
             with open(file_name,  "w", encoding='utf-8') as fp:
-                for main_content in redirect_soup.select('div.se-main-container'):
-                    for sub_content in main_content.select('div.se-component-content'):                                                                                                
+                if 'se_component' in str(redirect_soup):
+                    for sub_content in redirect_soup.select('div.se_component'):
                         txt = str(sub_content)
                         parsing_blog.parsing(fp, sub_content)
-                #parsing_blog.parsing(fp, redirect_soup)
+                else:
+                    for sub_content in redirect_soup.select('div.se-component'):
+                        txt = str(sub_content)
+                        parsing_blog.parsing(fp, sub_content)
+                
         return True
     except Exception as e:
          print(e)
