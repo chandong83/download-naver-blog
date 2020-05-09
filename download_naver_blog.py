@@ -9,14 +9,16 @@ def crawler(blog_url, file_name):
         #print(blog_soup)
         for link in blog_soup.select('iframe#mainFrame'):
             redirect_url = "http://blog.naver.com" + link.get('src')
-            redirect_soup = BeautifulSoup(requests.get(redirect_url).text, 'lxml')                
-            #with open('orig_' + file_name,  "w", encoding='utf-8') as fp:
-            #    fp.write(str(redirect_soup))
+            redirect_soup = BeautifulSoup(requests.get(redirect_url).text, 'lxml')                            
+            with open('orig_' + file_name,  "w", encoding='utf-8') as fp:
+                fp.write(str(redirect_soup))
+
             with open(file_name,  "w", encoding='utf-8') as fp:
                 for main_content in redirect_soup.select('div.se-main-container'):
                     for sub_content in main_content.select('div.se-component-content'):                                                                                                
                         txt = str(sub_content)
                         parsing_blog.parsing(fp, sub_content)
+                #parsing_blog.parsing(fp, redirect_soup)
         return True
     except Exception as e:
          print(e)
@@ -31,6 +33,7 @@ if __name__ == '__main__':
     url = sys.argv[1]
     output = sys.argv[2]
     #if crawler('https://blog.naver.com/chandong83/221951781607', 'blog.html'):
+    print(url)
     if crawler(url, output):
         print('done')
     else:

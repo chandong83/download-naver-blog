@@ -30,6 +30,7 @@ def img(fp, content):
     if 'se-module-image' in str(content):
         for sub_content in content.select('.se-image-resource'): # image link
             fp.write(sub_content['data-lazy-src'])
+            fp.write('\n')
         return True            
     return False
 
@@ -41,8 +42,25 @@ def sticker(fp, content):
         return True            
     return False
 
+# 스티커 이미지 링크
+def textarea(fp, content): 
+    if 'se_textarea' in str(content):
+        for sub_content in content.select('.se_textarea'): # image link
+            fp.write(str(sub_content))
+        return True            
+    return False
+
+# 스티커 이미지 링크
+def hr(fp, content): 
+    if 'se-hr' in str(content):
+        for sub_content in content.select('.se-hr'): # image link
+            #fp.write(str(sub_content))
+            fp.write(str('<hr /> \n'))
+        return True            
+    return False
+
 # 파싱 리스트
-parsing_func_list = [link, text, code, img, sticker]
+parsing_func_list = [link, text, code, img, sticker, textarea, hr]
 
 def parsing(fp, content):
     for func in parsing_func_list:
