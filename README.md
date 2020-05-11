@@ -1,6 +1,9 @@
 # 네이버 블로그 파일로 저장
 
 
+이제 MarkDown 형태로 저장됨.
+
+
 [테스트 버전]<br>
     
     파이선 : 3.7.6
@@ -21,8 +24,9 @@
     python .\download_naver_blog.py [네이버 블로그 링크] [저장 파일 이름]
     
     예 > 
-    python .\download_naver_blog.py https://blog.naver.com/chandong83/221951781607 blog.html
+    python .\download_naver_blog.py https://blog.naver.com/chandong83/221951781607 blog.md
     
+    해당 링크의 폴더가 out 폴더에 생성되고 이미지는 img 폴더에 추가됩니다.
 <br>
 <br>
 <br>
