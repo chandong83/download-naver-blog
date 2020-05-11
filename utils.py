@@ -1,4 +1,8 @@
 import os
+import urllib.request
+import urllib.parse
+
+
 def check_folder(folder):
     try:
         if not(os.path.isdir(folder)):
@@ -12,6 +16,18 @@ def check_folder(folder):
 
 def check_out_folder():    
     return check_folder('out')
+
+def saveImage(url, path):      
+    try:    
+        link = urllib.parse.quote(url,safe=':/?-=') 
+        #print('link : ' + link)
+        urllib.request.urlretrieve(link, path)
+        #urllib.request.urlretrieve(url, path)
+        print(path) 
+    except Exception as e:
+        print(url + ' ' + str(e))
+        return False
+    return True
 
 
 def check_chromedriver(driver_path):

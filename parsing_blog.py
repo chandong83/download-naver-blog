@@ -2,8 +2,11 @@ import requests
 import urllib.request
 from bs4 import BeautifulSoup
 
+import utils
+
+
 class Parser(object):
-    def __init__(self, _path='out', _markdown_mdoe=True):
+    def __init__(self, _path='out', _markdown_mdoe=True, skip_sticker=True):
         self.counter = 0
         self.markdown_mdoe = _markdown_mdoe
         self.folder_path = _path
@@ -11,8 +14,13 @@ class Parser(object):
             self.endline = '\n\n'
         else:
             self.endline = '\n'
+        self.title = '#'
+        self.subtitle1 = '##'
+        self.subtitle2 = '###'
+        self.subtitle3 = '####'
+        self.skip_sticker = skip_sticker
         # 파싱 리스트
-        self.parsing_func_list = [self.link, self.text, self.code, self.img, self.sticker, self.hr, self.textarea, self.video, self.script]
+        self.parsing_func_list = [self.link, self.text, self.code, self.img, self.sticker, self.hr, self.textarea, self.video, self.script, self.anniversary, self.unreliable_text]
 
 
     def is_exist_item(self):
@@ -20,18 +28,26 @@ class Parser(object):
 
     @staticmethod
     def redirect_url(blog_url):
-        if 'PostList.nhn' not in blog_url:
-            try:        
-                print('리다이렉트 주소를 가져옵니다.') 
-                blog_soup = BeautifulSoup(requests.get(blog_url).text, 'lxml')
-                for link in blog_soup.select('iframe#mainFrame'):
-                    redirect_url = "http://blog.naver.com" + link.get('src')
-                return redirect_url
-            except Exception as e:
-                print(e)
-                return ''
-        else:
-            return blog_url
+        redirect_link = ''
+                
+        no_need_redirect_url = ['PostView.nhn', 'PostList.nhn']
+
+        for no_need in no_need_redirect_url:            
+            if no_need in blog_url:
+                #print('no need redirect url: ' + blog_url)
+                return blog_url
+
+        try:        
+            print('리다이렉트 주소를 가져옵니다 : ', end = '') 
+            blog_soup = BeautifulSoup(requests.get(blog_url).text, 'lxml')
+            #print(blog_soup)
+            for link in blog_soup.select('iframe#mainFrame'):
+                redirect_link = "http://blog.naver.com" + link.get('src')
+            print(redirect_link) 
+            return redirect_link
+        except Exception as e:
+            print(e)
+            return ''
 
     # 링크
     def link(self, content):  
@@ -60,31 +76,72 @@ class Parser(object):
             return txt
         return None
 
+    
+    def wrapping_text(self, header, txt, tail=''):
+        return header + ' ' + txt.strip() + '' + tail
+
     # 텍스트
     def text(self, content): 
+        txt = '' 
+        if 'se-title-text' in str(content):  
+            for sub_content in content.select('.se-title-text'):
+                txt += self.wrapping_text(self.title, sub_content.text, self.endline)
+            return txt
+        elif 'se-section-sectionTitle' in str(content):                       
+            #for sub_content in content.select('.se-section-sectionTitle'):
+            for i, sub_content in enumerate( content.select('.se-section-sectionTitle') ):
+                #print(str(i) + ' ' + sub_content.text.strip())
+                if sub_content.text.strip() == '':
+                    continue
+                if 'se-l-default' in str(content):  # sectiontitle 1
+                    txt += self.wrapping_text(self.subtitle1, sub_content.text)
+                elif 'se-2-default' in str(content):  # sectiontitle 2
+                    txt += self.wrapping_text(self.subtitle2, sub_content.text)
+                elif 'se-3-default' in str(content):  # sectiontitle 3                    
+                    txt += self.wrapping_text(self.subtitle3, sub_content.text)
+                else:                
+                    txt += sub_content.text
+
+                txt += self.endline       
+            return txt    
+        elif 'se-module-text' in str(content):
+            for sub_content in content.select('.se-module-text'):
+                for p_tag in sub_content.select('p'):                    
+                    txt += p_tag.text                    
+                    txt += self.endline
+                if txt == '':
+                    txt += sub_content.text                
+                    txt += self.endline
+            return txt
+        return None
+
+    # 텍스트
+    def unreliable_text(self, content): 
+        '''
         txt = ''
         if 'se-module-text' in str(content):
             for sub_content in content.select('.se-module-text'):            
-                #fp.write(sub_content.text)
                 txt += sub_content.text
                 txt += self.endline
             return txt
+        '''
         return None
 
     # 코드
     def code(self, content): 
         txt = ''
         if 'se-code-source' in str(content):
-            for sub_content in content.select('.se-code-source'):
-                #fp.write(sub_content.text)
-                txt += sub_content.text
+            for sub_content in content.select('.se-code-source'):                
+                for line in sub_content.text.split('\n'):                    
+                    txt += '\t' + line + '\n'
                 txt += self.endline
+                #print(str(sub_content))                
             return txt
         return None
 
     # 이미지
     def img(self,content): 
-        txt = ''
+        txt = ''        
         if 'se-image' in str(content) or 'se_image' in str(content):
             for sub_content in content.select('img'):             
                 url = sub_content['data-lazy-src']
@@ -97,8 +154,8 @@ class Parser(object):
                     txt += url
                     txt += self.endline 
 
-                if not self.saveImage(url, self.folder_path + '/img/' + str(self.counter)+'.png'):
-                    print(str(content))
+                if not utils.saveImage(url, self.folder_path + '/img/' + str(self.counter)+'.png'):
+                    print('\t' + str(content) + ' 를 저장합니다.')
                 else:
                     self.counter += 1
 
@@ -108,20 +165,15 @@ class Parser(object):
     # 스티커 이미지 링크
     def sticker(self, content):     
         txt = ''
-        if 'se-sticker' in str(content):
+        cont_text = str(content).replace('se_sticker', 'se-sticker')        
+        if 'se-sticker' in str(cont_text):
+            if self.skip_sticker:                
+                return '[sticker]' + self.endline
             for sub_content in content.select('img'):
                 #fp.write(sub_content['src'])
                 txt += sub_content['src']
                 txt += self.endline
-            return txt    
-
-        if 'se_sticker' in str(content):
-            for sub_content in content.select('img'):
-                #fp.write(sub_content['src'])
-                txt += sub_content['src']
-                txt += self.endline
-            return txt
-        print('####none')
+            return txt   
         return None
         
     # 구분선
@@ -131,7 +183,10 @@ class Parser(object):
             for sub_content in content.select('.se-hr'):
                 #fp.write(str(sub_content))
                 #fp.write(str('<hr /> \n')) #hr 테그
-                txt += '<hr />'
+                if self.markdown_mdoe:
+                    txt += '***'
+                else:
+                    txt += '<hr />'
                 txt += self.endline
             return txt    
         return None
@@ -167,22 +222,63 @@ class Parser(object):
                 txt += sub_content['data-module']
                 txt += self.endline
             return txt
-        return None   
+        return None  
 
-    def saveImage(self, url, path):      
-        try:    
-            urllib.request.urlretrieve(url, path)
-            print(path)
-            #img_data = requests.get(url).content
-            #with open(path, 'wb') as handler:
-            #    handler.write(img_data)      
-        except Exception as e:
-            print(url + ' ' + str(e))
-            return False
-        return True
+    # 스크립트 영역
+    def script(self, content): 
+        txt = ''
+        if 'se-section-material' in str(content):
+            for sub_content in content.select('.se-material-title'):                
+                txt += '\t'+sub_content.text
+                txt += self.endline            
+            for sub_content in content.select('.se-section-material'):                
+                for sub_content in content.select('a'): 
+                    txt += '\t'+sub_content['href']
+                    txt += self.endline
+            return txt
+        return None       
 
-    
-
+    def anniversary(self, content):
+        txt = ''
+        if 'se-anniversarySection' in str(content):    
+            for sub_content in content.select('.se-anniversary-date'): 
+                txt += '\t'+sub_content.text
+                txt += self.endline        
+            for sub_content in content.select('.se-anniversary-date-text'): 
+                txt += '\t'+sub_content.text
+                txt += self.endline        
+            for sub_content in content.select('.se-anniversary-title'): 
+                txt += '\t'+sub_content.text
+                txt += self.endline
+            for sub_content in content.select('.se-anniversary-summary'): 
+                txt += '\t'+sub_content.text
+                txt += self.endline
+            for sub_content in content.select('a'): 
+                txt += '\t'+sub_content['href']
+                txt += self.endline
+               
+            return txt
+        return None       
+        '''
+        unkown tag: <div class="se-component se-anniversarySection se-l-anniversary_winter" id="SE-de85199c-41be-4717-9a3d-2a4b138b86fb">
+        <div class="se-component-content">
+        <div class="se-section se-section-anniversarySection se-l-anniversary_winter se-section-align-">
+        <a class="se-module se-module-anniversarySection" href="http://blog.naver.com/chandong83/40180614296" target="_blank">
+        <div class="se-anniversary-date-info">
+        <span class="se-anniversary-date">2013.2.15.</span>
+        <span class="se-anniversary-date-text">7년 전 오늘</span>
+        </div>
+        <div class="se-anniversary-info">
+        <strong class="se-anniversary-title">끝없는 고수의 등장....</strong>
+        <p class="se-anniversary-summary">RPG 게임을 할때나.... 만화 시리즈를 볼때 보면... 주인공이 강해지면 그 보다 강한 상대가 나타난다.... 근데..... 일하면서도 똑같은 것 같다.... 공부를 해서 내가 강해졌다고 생각하면 더 강한 고수가 
+        나타나고.... 흠.... 이 세상에 넘사벽 고수가 어마어마 하다...</p>
+        <p class="se-anniversary-blog">하이! 제니스</p>
+        </div>
+        </a>
+        </div>
+        </div>
+        </div>
+        '''
     def parsing(self, content):
         txt = ''        
         for func in self.parsing_func_list:
