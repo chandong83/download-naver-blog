@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from parsing_blog import Parser
 import utils
 
-debug_mode = True      # 디버그 모드 - url 고정
+debug_mode = False      # 디버그 모드 - url 고정
 user_reads = True       # 로그인하여 조회수도 함께 얻기
 skip_dump_file = True   # 덤프 데이터 얻기
 
