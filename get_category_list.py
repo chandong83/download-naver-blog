@@ -8,10 +8,10 @@ from selenium.webdriver.support.events import EventFiringWebDriver, AbstractEven
 from selenium.common.exceptions import NoSuchElementException,StaleElementReferenceException
 from bs4 import BeautifulSoup
 
-import parsing_blog
+from parsing_blog import Parser
 import utils
 
-debug_mode = False      # 디버그 모드 - url 고정
+debug_mode = True      # 디버그 모드 - url 고정
 user_reads = True       # 로그인하여 조회수도 함께 얻기
 skip_dump_file = True   # 덤프 데이터 얻기
 
@@ -50,10 +50,33 @@ def write_file_csv(fp, item):
 
 
 def start_parsing(driver):
-    driver.find_element_by_xpath('//*[@id="listCountToggle"]').click() 
-    time.sleep(1) 
+    try:
+        toggle_button = driver.find_element_by_xpath('//*[@id="toplistSpanBlind"]')
+        if toggle_button.text == '목록열기': # 리스트가 닫혀있음
+            toggle_button.click()            
+            time.sleep(1)         
+    except:
+        print('목록 버튼을 찾지 못 했습니다.')
+        print('프로그램을 종료합니다.')
+        return False
+    
+    
 
-    driver.find_element_by_xpath('//*[@id="changeListCount"]/a[5]').click() 
+    try:
+        driver.find_element_by_xpath('//*[@id="listCountToggle"]').click()        
+    except:
+        print('줄 보기 버튼을 찾지 못 했습니다.')
+        print('프로그램을 종료합니다.')
+        return False
+    
+
+    try:
+        driver.find_element_by_xpath('//*[@id="changeListCount"]/a[5]').click()         
+    except:
+        print('30줄 보기 버튼을 찾지 못 했습니다.')
+        print('프로그램을 종료합니다.')
+        return False
+
     time.sleep(1) 
     index = 0
                 
@@ -69,6 +92,7 @@ def start_parsing(driver):
         if not get_next_pages(driver):
             break
     fp_csv.close()
+    return True
 
 def get_next_tab(driver):    
     time.sleep(1) 
@@ -259,13 +283,13 @@ if __name__ == '__main__':
             else:
                 break
     else:
-        url = 'https://blog.naver.com/chandong83'
+        url = 'https://blog.naver.com/PostList.nhn?blogId=chandong83&from=postList&categoryNo=10'
 
     if not utils.check_out_folder():
         exit(-1)
 
     print(url + ' : 주소의 정보를 읽어옵니다.')    
-    driver.get(parsing_blog.redirect_url(url))
+    driver.get(Parser.redirect_url(url))
     while is_done is not True:
         time.sleep(1)        
     driver.implicitly_wait(3)
