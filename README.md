@@ -62,10 +62,16 @@ https://chromedriver.storage.googleapis.com/index.html
 ## 리스트 정보로 일괄 다운로드하기 - 작업중
 
 [사용 설명]
+    
+    먼저 get_category_list.py 를 사용해 out/list.csv 파일을 만듭니다.
+    아래의 명령으로 list.csv에 있는 내용을 가져옵니다.
 
-    python .\macro.py
-    get_category_list.py 를 사용해 저장된 out/list.csv 파일을 읽어서 글 들을 다운로드합니다.
-    macro.py안에 
-        start = 1
-        total = 0
-    값을 수정해 시작위치와 갯수를 지정할 수 있다. total이 0이면 list.csv의 모든 데이터를 다운로드합니다.
+    python .\macro.py [링크 리스트 파일] [시작] [총 개수]
+     - 링크 리스트 파일 : get_category_list.py로 생성한 리스트 파일
+     - 시작 : 해당 리스트 파일에서 내용을 가져올 시작 번호 1번부터 시작
+     - 총 개수 : 시작 번호부터 가져올 총 개수
+  
+    python .\macro.py .\out\list.csv 1 2
+     - out\list.cvs 파일에 1번부터 2개 가져오라는 명령
+  
+    
