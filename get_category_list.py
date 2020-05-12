@@ -248,7 +248,7 @@ if __name__ == '__main__':
     if user_reads:
         driver.get('https://nid.naver.com/nidlogin.login')    
         driver.implicitly_wait(3)
-    if not debug_mode:
+    if not debug_mode: 
         while True:
             if user_reads:
                 url = input("로그인이 성공하였다면, 리스트를 얻을 링크주소를 입력후 엔터키를 입력하세요.\n:")

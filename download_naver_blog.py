@@ -59,7 +59,7 @@ def run(url, output):
         print(save_folder_path + '실패하였습니다.')
 
 if __name__ == '__main__':
-    #debug = True
+    #debug = True 
     debug = False
     if debug is False:
         if len(sys.argv) != 3:

@@ -17,7 +17,7 @@ def check_folder(folder):
 def check_out_folder():    
     return check_folder('out')
 
-def saveImage(url, path):      
+def saveImage(url, path):       
     try:    
         link = urllib.parse.quote(url,safe=':/?-=') 
         #print('link : ' + link)

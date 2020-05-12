@@ -140,7 +140,7 @@ class Parser(object):
         return None
 
     # 이미지
-    def img(self,content): 
+    def img(self,content):  
         txt = ''        
         if 'se-image' in str(content) or 'se_image' in str(content):
             for sub_content in content.select('img'):             

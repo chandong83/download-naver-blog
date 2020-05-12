@@ -72,6 +72,6 @@ https://chromedriver.storage.googleapis.com/index.html
      - 총 개수 : 시작 번호부터 가져올 총 개수
   
     python .\macro.py .\out\list.csv 1 2
-     - out\list.cvs 파일에 1번부터 2개 가져오라는 명령
+     - out\list.cvs 파일에 1번부터 2개 가져오라는 명령 
   
     

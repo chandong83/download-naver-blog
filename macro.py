@@ -32,7 +32,7 @@ if __name__ == '__main__':
         file_path = sys.argv[1]
         start = int(sys.argv[2])
         total = int(sys.argv[3])
-    else:    
+    else:
         print('디버그 모드')
         file_path = 'out/list.csv'
         start = 1
