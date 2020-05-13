@@ -20,7 +20,7 @@ class Parser(object):
         self.subtitle3 = '####'
         self.skip_sticker = skip_sticker
         # 파싱 리스트
-        self.parsing_func_list = [self.link, self.text, self.code, self.img, self.sticker, self.hr, self.textarea, self.video, self.script, self.anniversary, self.unreliable_text]
+        self.parsing_func_list = [self.img_group, self.link, self.text, self.code, self.img, self.sticker, self.hr, self.textarea, self.video, self.script, self.anniversary, self.unreliable_text]
 
 
     def is_exist_item(self):
@@ -131,34 +131,50 @@ class Parser(object):
     def code(self, content): 
         txt = ''
         if 'se-code-source' in str(content):
+            txt += '```'
+            txt += self.endline
             for sub_content in content.select('.se-code-source'):                
                 for line in sub_content.text.split('\n'):                    
                     txt += '\t' + line + '\n'
                 txt += self.endline
                 #print(str(sub_content))                
+            txt += '```'
+            txt += self.endline
             return txt
         return None
+
+    # 이미지 그룹
+    def img_group(self,content):  
+        txt = ''        
+        if 'se-imageGroup' in str(content):
+            txt += self.img(content)
+            txt += self.text(content)
+            return txt
+        return None
+        
 
     # 이미지
     def img(self,content):  
         txt = ''        
         if 'se-image' in str(content) or 'se_image' in str(content):
-            for sub_content in content.select('img'):             
+            print('image: ' )
+            for sub_content in content.select('img'):                             
+                print('sub_content[data-lazy-src] : ' + str(sub_content['data-lazy-src']))
                 url = sub_content['data-lazy-src']
                 if self.markdown_mdoe:
                     txt += '![' + './img/' + str(self.counter)+'.png' + ']('                    
                     txt += './img/' + str(self.counter)+'.png' + ')'   
-                    txt += self.endline
+                    txt += '\n'
                 else:
                     txt += '['+ str(self.counter) +']'
                     txt += url
-                    txt += self.endline 
+                    txt += '\n'
 
                 if not utils.saveImage(url, self.folder_path + '/img/' + str(self.counter)+'.png'):
                     print('\t' + str(content) + ' 를 저장합니다.')
                 else:
                     self.counter += 1
-
+            txt += self.endline
             return txt       
         return None
 
@@ -184,7 +200,7 @@ class Parser(object):
                 #fp.write(str(sub_content))
                 #fp.write(str('<hr /> \n')) #hr 테그
                 if self.markdown_mdoe:
-                    txt += '***'
+                    txt += '---'
                 else:
                     txt += '<hr />'
                 txt += self.endline
