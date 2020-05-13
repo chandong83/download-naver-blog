@@ -146,9 +146,14 @@ class Parser(object):
     # 이미지 그룹
     def img_group(self,content):  
         txt = ''        
-        if 'se-imageGroup' in str(content):
-            txt += self.img(content)
-            txt += self.text(content)
+        str_content = str(content)
+        if 'se-imageGroup' in str_content or 'se-imageStrip' in str_content:
+            img_txt = self.img(content)            
+            if not (img_txt == '' or img_txt is None):
+                txt += img_txt
+            text_txt = self.text(content)
+            if not (text_txt == '' or text_txt is None):
+                txt += text_txt
             return txt
         return None
         
@@ -157,9 +162,7 @@ class Parser(object):
     def img(self,content):  
         txt = ''        
         if 'se-image' in str(content) or 'se_image' in str(content):
-            print('image: ' )
-            for sub_content in content.select('img'):                             
-                print('sub_content[data-lazy-src] : ' + str(sub_content['data-lazy-src']))
+            for sub_content in content.select('img'):                                             
                 url = sub_content['data-lazy-src']
                 if self.markdown_mdoe:
                     txt += '![' + './img/' + str(self.counter)+'.png' + ']('                    
@@ -221,24 +224,14 @@ class Parser(object):
     # 비디오 영역
     def video(self, content): 
         txt = ''
-        if 'se_video' in str(content):
+        
+        if 'se_video' in str(content) or 'se-video' in str(content):
             for sub_content in content.select('iframe'): 
                 #fp.write(sub_content['src'])
                 txt += sub_content['src']
                 txt += self.endline
             return txt
         return None
-
-    # 스크립트 영역
-    def script(self, content): 
-        txt = ''
-        if '__se_module_data' in str(content):
-            for sub_content in content.select('script'): 
-                #fp.write(sub_content['data-module'])
-                txt += sub_content['data-module']
-                txt += self.endline
-            return txt
-        return None  
 
     # 스크립트 영역
     def script(self, content): 
@@ -251,6 +244,17 @@ class Parser(object):
                 for sub_content in content.select('a'): 
                     txt += '\t'+sub_content['href']
                     txt += self.endline
+            return txt
+        if 'se-oembed' in str(content):
+            for sub_content in content.select('script'): 
+                #fp.write(sub_content['data-module'])
+                script_txt = sub_content['data-module']
+                '''
+                '''
+                script_txt = script_txt[script_txt.find('<iframe'):]
+                script_txt = script_txt[:script_txt.find('/iframe')+len('/iframe')+1]
+                txt += script_txt
+                txt += self.endline
             return txt
         return None       
 
