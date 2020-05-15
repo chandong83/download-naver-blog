@@ -135,7 +135,7 @@ class Parser(object):
             txt += self.endline
             for sub_content in content.select('.se-code-source'):                
                 for line in sub_content.text.split('\n'):                    
-                    txt += '\t' + line + '\n'
+                    txt += line + '\n'
                 txt += self.endline
                 #print(str(sub_content))                
             txt += '```'
