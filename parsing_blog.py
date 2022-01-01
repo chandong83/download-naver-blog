@@ -30,7 +30,7 @@ class Parser(object):
     def redirect_url(blog_url):
         redirect_link = ''
                 
-        no_need_redirect_url = ['PostView.nhn', 'PostList.nhn']
+        no_need_redirect_url = ['PostView.nhn', 'PostList.nhn', 'PostList.naver', 'PostView.naver']
 
         for no_need in no_need_redirect_url:            
             if no_need in blog_url:
